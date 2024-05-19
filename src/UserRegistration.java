@@ -5,6 +5,8 @@ import java.awt.event.ActionListener;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Arrays;
+import javax.swing.JOptionPane;
 
 
 public class UserRegistration extends JFrame {
@@ -12,33 +14,25 @@ public class UserRegistration extends JFrame {
     private static JLabel naslov = new JLabel("REGISTRACIJA");
     private static JLabel napotkiLabel = new JLabel("Ime:");
     private static JTextField imeTextBox = new JTextField(25);
-
     private static JLabel napotki2Label = new JLabel("Priimek:");
     private static JTextField priimekTextBox = new JTextField(25);
-
     private static JLabel napotki3Label = new JLabel("Uporabniško ime:");
     private static JTextField uporabniskoimeTextBox = new JTextField(25);
-
     private static JLabel napotki4Label = new JLabel("Geslo:");
     private static JPasswordField gesloTextBox = new JPasswordField(25);
-
     private static JLabel napotki5Label = new JLabel("Ponovite geslo:");
     private static JPasswordField ponovitegesloTextBox = new JPasswordField(25);
-
     private static JLabel napotki6Label = new JLabel("Telefonska številka:");
     private static JTextField telefonskaTextBox = new JTextField(25);
-
     private static JLabel napotki7Label = new JLabel("E-mail:");
     private static JTextField emailTextBox = new JTextField(25);
-
     private static JLabel napotki8Label = new JLabel("Naslov:");
     private static JTextField naslovTextBox = new JTextField(25);
-
     private static JLabel krajLabel = new JLabel("Kraj:");
     private static JTextField krajTextBox = new JTextField(25);
-
     private static JLabel izpisLabel = new JLabel();
     private static JButton gumb = new JButton("Registriraj se");
+    private static JButton nazajGumb = new JButton("Nazaj na prijavo");
 
     public UserRegistration() {
         setLayout(new GridBagLayout());
@@ -127,18 +121,43 @@ public class UserRegistration extends JFrame {
         gbc.gridy = 9;
         add(krajTextBox, gbc);
 
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 1;
         gbc.gridx = 0;
         gbc.gridy = 10;
         gbc.gridwidth = 2;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.fill = GridBagConstraints.CENTER;
         add(gumb, gbc);
 
-        gbc.gridx = 0;
         gbc.gridy = 11;
+        add(nazajGumb, gbc);
+
+        gbc.insets = new Insets(10, 5, 5, 5);
+
+        gbc.gridx = 0;
+        gbc.gridy = 12;
         gbc.gridwidth = 2;
         add(izpisLabel, gbc);
 
         gumb.addActionListener(new MyActionListener());
+        nazajGumb.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+
+                dispose();
+
+
+                Login loginFrame = new Login();
+                loginFrame.setSize(500, 500);
+                loginFrame.setTitle("Prijava");
+                loginFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                loginFrame.setVisible(true);
+            }
+        });
+
     }
 
 
@@ -165,6 +184,7 @@ public class UserRegistration extends JFrame {
             } else {
                 JOptionPane.showMessageDialog(null, "Napaka! Vnesite pravilne podatke.", "Napaka", JOptionPane.ERROR_MESSAGE);
             }
+
         }
 
         public void buttonClicked(ActionEvent e) {
@@ -178,16 +198,18 @@ public class UserRegistration extends JFrame {
             String kraj = krajTextBox.getText();
             String naslov = naslovTextBox.getText();
 
-            // Preverite, ali se gesli ujemata
+
             if (!gesloMatches(geslo, ponoviteGeslo)) {
                 JOptionPane.showMessageDialog(null, "Gesli se ne ujemata.", "Napaka", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
-            vstaviUporabnikaVDatabase(uporabniskoime, new String(geslo), ime, priimek, email, telefonska, naslov, kraj);
+            String hashedGeslo = HashPassword.hashPassword(new String(geslo));
+
+            vstaviUporabnikaVDatabase(uporabniskoime, hashedGeslo, ime, priimek, email, telefonska, naslov, kraj);
         }
 
-        // Metoda za preverjanje, ali se gesli ujemata
+
         private boolean gesloMatches(char[] geslo1, char[] geslo2) {
             return java.util.Arrays.equals(geslo1, geslo2);
         }
@@ -198,14 +220,14 @@ public class UserRegistration extends JFrame {
             try (Connection connection = databaseConnection.getConnection()) {
                 String sql = "SELECT dodaj_uporabnika14(?, ?, ?, ?, ?, ?, ?, ?)";
                 try (CallableStatement statement = databaseConnection.prepareCall(sql, connection)) {
-                    statement.setString(1, uporabniskoime);
-                    statement.setString(2, geslo);
-                    statement.setString(3, ime);
-                    statement.setString(4, priimek);
-                    statement.setString(5, email);
-                    statement.setInt(6, Integer.parseInt(telefonska));
-                    statement.setString(7, naslov);
-                    statement.setString(8, kraj);
+                    statement.setString(1, ime);
+                    statement.setString(2, priimek);
+                    statement.setString(3, uporabniskoime);
+                    statement.setString(4, geslo);
+                    statement.setInt(5, Integer.parseInt(telefonska));
+                    statement.setString(6, email);
+                    statement.setString(7, kraj);
+                    statement.setString(8, naslov);
 
                     statement.executeQuery();
                 }
@@ -216,13 +238,16 @@ public class UserRegistration extends JFrame {
     }
 
     public static void main(String[] args) {
+
         SwingUtilities.invokeLater(() -> {
-            UserRegistration window = new UserRegistration();
-            window.setSize(500, 500);
-            window.setTitle("Registracija");
-            window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            window.setVisible(true);
+            UserRegistration registrationFrame = new UserRegistration();
+            registrationFrame.setSize(500, 500);
+            registrationFrame.setTitle("Registracija");
+            registrationFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            registrationFrame.setVisible(true);
+
         });
+
     }
 
 }

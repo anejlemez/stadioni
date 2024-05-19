@@ -13,14 +13,14 @@ public class DatabaseConnection {
 
     public static void main(String[] args) {
         try {
-            // Ustvari povezavo z bazo
+
             DatabaseConnection dbConnection = new DatabaseConnection();
             Connection connection = dbConnection.getConnection();
 
             if (connection != null) {
                 System.out.println("Povezava s podatkovno bazo uspešno vzpostavljena.");
-                // Zapri povezavo
-                dbConnection.closeConnection(connection);
+
+                DatabaseConnection.closeConnection(connection);
             } else {
                 System.out.println("Povezava s podatkovno bazo ni bila uspešno vzpostavljena.");
             }
