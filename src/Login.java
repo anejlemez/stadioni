@@ -5,6 +5,8 @@ import java.awt.event.ActionListener;
 
 public class Login extends JFrame {
 
+    public static int LoggedInUserId;
+    public static String LoggedInUporabniskoime;
     private JTextField usernameField;
     private JPasswordField passwordField;
 
@@ -59,10 +61,14 @@ public class Login extends JFrame {
                 String geslo = new String (passwordField.getPassword());
                 String hashedGeslo = HashPassword.hashPassword(new String(geslo));
 
-                boolean uspesnoPrijavljen = LoginManager.preglej_uporabnika(uporabniskoIme, uporabniskoIme, hashedGeslo);
+                boolean userObstaja = LoginManager.preglej_uporabnika(uporabniskoIme, uporabniskoIme, hashedGeslo);
 
-                if (uspesnoPrijavljen){
+                if (userObstaja){
                     JOptionPane.showMessageDialog(Login.this, "Uspešno ste prijavljeni.", "Uspeh", JOptionPane.INFORMATION_MESSAGE);
+                    LoggedInUporabniskoime = uporabniskoIme;
+                    UserInterface userInterface = new UserInterface(LoggedInUserId);
+                    userInterface.setVisible(true);
+                    dispose();
                 } else{
                     JOptionPane.showMessageDialog(Login.this, "Napačno uporabniško ime ali geslo.", "Napaka", JOptionPane.ERROR_MESSAGE);
                 }

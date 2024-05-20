@@ -7,6 +7,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
 import javax.swing.JOptionPane;
+import java.sql.ResultSet;
+import java.sql.Statement;
 
 
 public class UserRegistration extends JFrame {
@@ -29,7 +31,7 @@ public class UserRegistration extends JFrame {
     private static JLabel napotki8Label = new JLabel("Naslov:");
     private static JTextField naslovTextBox = new JTextField(25);
     private static JLabel krajLabel = new JLabel("Kraj:");
-    private static JTextField krajTextBox = new JTextField(25);
+    private static JComboBox krajComboBox = new JComboBox<>();
     private static JLabel izpisLabel = new JLabel();
     private static JButton gumb = new JButton("Registriraj se");
     private static JButton nazajGumb = new JButton("Nazaj na prijavo");
@@ -117,9 +119,24 @@ public class UserRegistration extends JFrame {
         gbc.gridy = 9;
         add(krajLabel, gbc);
 
+        DatabaseConnection databaseConnection = new DatabaseConnection();
+        try (Connection connection = databaseConnection.getConnection()) {
+
+            String sql = "SELECT ime FROM kraji";
+            try (Statement statement = connection.createStatement();
+                 ResultSet resultSet = statement.executeQuery(sql)) {
+
+                while (resultSet.next()) {
+                    krajComboBox.addItem(resultSet.getString("ime"));
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+
         gbc.gridx = 1;
         gbc.gridy = 9;
-        add(krajTextBox, gbc);
+        add(krajComboBox, gbc);
 
 
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -145,8 +162,6 @@ public class UserRegistration extends JFrame {
         nazajGumb.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
-
                 dispose();
 
 
@@ -170,7 +185,7 @@ public class UserRegistration extends JFrame {
                 telefonskaTextBox.getText().isEmpty() ||
                 emailTextBox.getText().isEmpty() ||
                 naslovTextBox.getText().isEmpty() ||
-                krajTextBox.getText().isEmpty()) {
+                krajComboBox.getSelectedItem() == null) {
             return false;
         }
         return true;
@@ -195,7 +210,7 @@ public class UserRegistration extends JFrame {
             char[] ponoviteGeslo = ponovitegesloTextBox.getPassword();
             String telefonska = telefonskaTextBox.getText();
             String email = emailTextBox.getText();
-            String kraj = krajTextBox.getText();
+            String kraj = (String) krajComboBox.getSelectedItem();
             String naslov = naslovTextBox.getText();
 
 
@@ -214,6 +229,8 @@ public class UserRegistration extends JFrame {
             return java.util.Arrays.equals(geslo1, geslo2);
         }
 
+
+
         private void vstaviUporabnikaVDatabase(String uporabniskoime, String geslo, String ime ,
                                                String priimek, String email, String telefonska, String naslov, String kraj) {
             DatabaseConnection databaseConnection = new DatabaseConnection();
@@ -229,7 +246,7 @@ public class UserRegistration extends JFrame {
                     statement.setString(7, kraj);
                     statement.setString(8, naslov);
 
-                    statement.executeQuery();
+                    statement.execute();
                 }
             } catch (SQLException ex) {
                 ex.printStackTrace();
